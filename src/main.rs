@@ -1,6 +1,8 @@
 use std::{fs, thread};
 
-fn merge_sort(left: &mut [i32], right: &mut [i32]) {
+fn merge_sort(source: &mut [i32]) {
+    let merge_size = source.len();
+    let (left, right) = source.split_at_mut(merge_size / 2);
     let left_size: usize = left.len();
     let right_size: usize = right.len();
     if left_size == 0 {
@@ -15,16 +17,13 @@ fn merge_sort(left: &mut [i32], right: &mut [i32]) {
         return;
     }
     thread::scope(|s| {
-        let (left_split_a, left_split_b) = left.split_at_mut(left_size / 2);
-        let (right_split_a, right_split_b) = right.split_at_mut(right_size / 2);
-        s.spawn(move || {
-            merge_sort(left_split_a, left_split_b);
+        s.spawn(|| {
+            merge_sort(left);
         });
-        s.spawn(move || {
-            merge_sort(right_split_a, right_split_b);
+        s.spawn(|| {
+            merge_sort(right);
         });
     });
-    let merge_size = left_size + right_size;
     let mut aux: Vec<i32> = vec![0; merge_size];
     let mut i = 0;
     let mut left_i = 0;
@@ -65,8 +64,8 @@ fn main() {
         .map(|x| x.trim()) // remove spaces
         .map(|x| x.parse::<i32>().unwrap())
         .collect();
-    let size: usize = numbers.len();
-    let (left, right) = numbers.split_at_mut(size / 2);
-    merge_sort(left, right);
+    // let size: usize = numbers.len();
+    // let (left, right) = numbers.split_at_mut(size / 2);
+    merge_sort(numbers.as_mut_slice());
     println!("{:?}", numbers);
 }
